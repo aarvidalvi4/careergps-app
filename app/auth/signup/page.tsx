@@ -1,7 +1,7 @@
 'use client';
-import { useState, FormEvent, useEffect, Suspense } from 'react';
+import { useState, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { C, FONT_DISPLAY, FONT_BODY, FONT_MONO, inputStyle, btnPrimary, Panel } from '@/components/ui';
 import { Compass, Github, ArrowRight, GraduationCap, Briefcase } from '@/components/icons';
@@ -12,17 +12,11 @@ export default function Signup() {
 
 function SignupInner() {
   const router = useRouter();
-  const params = useSearchParams();
-  const [type, setType] = useState<'student' | 'recruiter'>('student');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (params.get('type') === 'recruiter') setType('recruiter');
-  }, [params]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,7 +28,7 @@ function SignupInner() {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass, name, account_type: type }),
+      body: JSON.stringify({ email, password: pass, name, account_type: 'student' }),
     });
     const json = await res.json();
     if (!res.ok) { setErr(json.error ?? 'Signup failed'); setLoading(false); return; }
@@ -70,14 +64,12 @@ function SignupInner() {
           <p style={{ color: C.dim, fontSize: 13.5, margin: '0 0 22px' }}>Your career co-pilot is waiting.</p>
 
           <div style={{ display: 'flex', gap: 8, marginBottom: 22, background: C.panel2, borderRadius: 11, padding: 4 }}>
-            <button onClick={() => setType('student')} style={{
+            <button style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-              padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              fontFamily: FONT_BODY, fontSize: 13.5, fontWeight: type === 'student' ? 600 : 400,
-              background: type === 'student' ? C.panel : 'transparent',
-              color: type === 'student' ? C.text : C.dim,
-              boxShadow: type === 'student' ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
-              transition: 'all .18s',
+              padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'default',
+              fontFamily: FONT_BODY, fontSize: 13.5, fontWeight: 600,
+              background: C.panel, color: C.text,
+              boxShadow: '0 1px 4px rgba(0,0,0,.08)',
             }}>
               <GraduationCap size={15} /> Student
             </button>
@@ -119,7 +111,7 @@ function SignupInner() {
             <div>
               <div style={{ fontSize: 13, color: C.dim, marginBottom: 6 }}>Email</div>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                placeholder={type === 'student' ? 'you@university.edu' : 'you@company.com'} style={{ ...inputStyle }} />
+                placeholder="you@university.edu" style={{ ...inputStyle }} />
             </div>
             <div>
               <div style={{ fontSize: 13, color: C.dim, marginBottom: 6 }}>Password</div>

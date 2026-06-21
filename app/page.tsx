@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { C, FONT_DISPLAY, FONT_BODY, FONT_MONO, Panel, Pill } from '@/components/ui';
+import { C, FONT_DISPLAY, FONT_MONO, Panel, Pill } from '@/components/ui';
 import { Compass, GitCompareArrows, Hammer, Activity, Users, FileText, Check, ArrowRight, Briefcase, BadgeCheck, Shield } from '@/components/icons';
 
 const feats = [
@@ -27,9 +27,9 @@ export default function Landing() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Link href="/auth/signup?type=recruiter" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', color: C.cyan, padding: '9px 14px', borderRadius: 10, fontSize: 12.5, cursor: 'pointer', textDecoration: 'none', border: `1px solid ${C.cyan}55` }}>
-            <Briefcase size={14} /> For recruiters
-          </Link>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', color: C.faint, padding: '9px 14px', borderRadius: 10, fontSize: 12.5, border: `1px solid ${C.line}`, opacity: 0.6 }}>
+            <Briefcase size={14} /> For recruiters · soon
+          </span>
           <Link href="/auth/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', color: C.text, padding: '9px 14px', borderRadius: 10, fontSize: 12.5, cursor: 'pointer', textDecoration: 'none', border: `1px solid ${C.line}` }}>
             Log in
           </Link>
@@ -95,9 +95,9 @@ export default function Landing() {
               <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}><Shield size={14} color={C.cyan} /> Student-controlled privacy</span>
             </div>
           </div>
-          <Link href="/auth/signup?type=recruiter" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: C.cyan, color: '#ffffff', padding: '14px 24px', borderRadius: 12, fontSize: 15, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            Apply for recruiter access <ArrowRight size={16} />
-          </Link>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: C.panel2, color: C.faint, padding: '14px 24px', borderRadius: 12, fontSize: 15, border: `1px solid ${C.line}`, whiteSpace: 'nowrap', opacity: 0.65 }}>
+            Recruiter access · coming soon
+          </span>
         </div>
       </section>
     </div>
