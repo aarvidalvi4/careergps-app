@@ -1,0 +1,13 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #f5f6fa; }
+#root { min-height: 100vh; }
+::selection { background: #4f46e5; color: #fff; }
+input::placeholder, textarea::placeholder { color: #9499a8; }
+input:focus, textarea:focus, select:focus { border-color: #4f46e5 !important; outline: none; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: #e2e5ee; border-radius: 8px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.fade { animation: fadeUp .4s ease both; }
+@media print { .no-print { display: none !important; } }
