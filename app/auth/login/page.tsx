@@ -24,12 +24,11 @@ export default function Login() {
       setLoading(false);
       return;
     }
-    // check onboarding state
     const { data: profile } = await sb.from('profiles').select('onboarded, account_type').eq('id', (await sb.auth.getUser()).data.user!.id).single();
-    if (!profile?.onboarded) {
-      router.push('/onboard');
-    } else if (profile?.account_type === 'recruiter') {
+    if (profile?.account_type === 'recruiter') {
       router.push('/recruiter');
+    } else if (!profile?.onboarded) {
+      router.push('/onboard');
     } else {
       router.push('/dashboard');
     }
