@@ -47,22 +47,6 @@ function SignupInner() {
     router.push('/onboard');
   };
 
-  const oauthGoogle = async () => {
-    const sb = createClient();
-    await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback?type=${type}` },
-    });
-  };
-
-  const oauthGithub = async () => {
-    const sb = createClient();
-    await sb.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: `${location.origin}/auth/callback?type=${type}` },
-    });
-  };
-
   const logo = (
     <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', justifyContent: 'center', marginBottom: 36 }}>
       <div style={{ width: 36, height: 36, borderRadius: 10, background: C.lime, display: 'grid', placeItems: 'center' }}>
@@ -86,20 +70,26 @@ function SignupInner() {
           <p style={{ color: C.dim, fontSize: 13.5, margin: '0 0 22px' }}>Your career co-pilot is waiting.</p>
 
           <div style={{ display: 'flex', gap: 8, marginBottom: 22, background: C.panel2, borderRadius: 11, padding: 4 }}>
-            {(['student', 'recruiter'] as const).map(t => (
-              <button key={t} onClick={() => setType(t)} style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                fontFamily: FONT_BODY, fontSize: 13.5, fontWeight: type === t ? 600 : 400,
-                background: type === t ? C.panel : 'transparent',
-                color: type === t ? C.text : C.dim,
-                boxShadow: type === t ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
-                transition: 'all .18s',
-              }}>
-                {t === 'student' ? <GraduationCap size={15} /> : <Briefcase size={15} />}
-                {t === 'student' ? 'Student' : 'Recruiter'}
-              </button>
-            ))}
+            <button onClick={() => setType('student')} style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              fontFamily: FONT_BODY, fontSize: 13.5, fontWeight: type === 'student' ? 600 : 400,
+              background: type === 'student' ? C.panel : 'transparent',
+              color: type === 'student' ? C.text : C.dim,
+              boxShadow: type === 'student' ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
+              transition: 'all .18s',
+            }}>
+              <GraduationCap size={15} /> Student
+            </button>
+            <button disabled style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'not-allowed',
+              fontFamily: FONT_BODY, fontSize: 13.5, fontWeight: 400,
+              background: 'transparent', color: C.faint, opacity: 0.6,
+            }}>
+              <Briefcase size={15} /> Recruiter
+              <span style={{ fontSize: 9, fontFamily: FONT_MONO, marginLeft: 2 }}>· soon</span>
+            </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
@@ -136,12 +126,7 @@ function SignupInner() {
               <input type="password" required value={pass} onChange={e => setPass(e.target.value)}
                 placeholder="At least 8 characters" style={{ ...inputStyle }} />
             </div>
-            {type === 'recruiter' && (
-              <div style={{ background: `${C.cyan}14`, border: `1px solid ${C.cyan}33`, borderRadius: 10, padding: '11px 14px', fontSize: 13, color: C.dim }}>
-                Recruiter accounts require verification before accessing the talent pool. You&apos;ll be notified by email.
-              </div>
-            )}
-            {err && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9, padding: '10px 13px', fontSize: 13, color: '#dc2626' }}>{err}</div>}
+            {err &&<div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 9, padding: '10px 13px', fontSize: 13, color: '#dc2626' }}>{err}</div>}
             <button type="submit" disabled={loading} style={{ ...btnPrimary, justifyContent: 'center', padding: '13px 20px', fontSize: 15, opacity: loading ? 0.7 : 1 }}>
               {loading ? 'Creating account…' : <>Create account <ArrowRight size={16} /></>}
             </button>
