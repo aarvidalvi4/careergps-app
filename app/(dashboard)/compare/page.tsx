@@ -2,12 +2,22 @@
 import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { computeProfile } from '@/lib/engine';
+import { useMarketData } from '@/lib/useMarketData';
 import { C, FONT_DISPLAY, FONT_MONO, FONT_BODY, Panel, Head } from '@/components/ui';
 import { BookOpen, Plus } from '@/components/icons';
 
 export default function Compare() {
   const { profile } = useProfile();
   const prof = computeProfile(profile);
+  const { data: market, loading: marketLoading } = useMarketData(prof.role);
+
+  // Merge static missing with live gaps; prioritise live data when available
+  const ownedSet = new Set(profile.skills ?? []);
+  const liveGaps = (market?.topSkills ?? []).filter(s => !ownedSet.has(s));
+  const displayGaps = liveGaps.length > 0
+    ? Array.from(new Set([...liveGaps, ...prof.missing]))
+    : prof.missing;
+  const isLive = liveGaps.length > 0;
 
   const gpsBoost = Math.round(55 / Math.max(1, prof.demand.length));
 
@@ -79,37 +89,62 @@ export default function Compare() {
 
         {/* Right: Add on top */}
         <Panel accent={C.cyan} style={{ padding: '24px 26px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <Plus size={18} color={C.cyan} />
-            <div style={{ fontFamily: FONT_DISPLAY, fontSize: 20, color: C.cyan }}>Add on top to be job-ready</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Plus size={18} color={C.cyan} />
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 20, color: C.cyan }}>Add on top to be job-ready</div>
+            </div>
+            {isLive ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: `${C.cyan}14`, border: `1px solid ${C.cyan}33`, borderRadius: 20, padding: '4px 10px' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.cyan }} />
+                <span style={{ fontFamily: FONT_MONO, fontSize: 9.5, color: C.cyan, letterSpacing: .5 }}>LIVE</span>
+              </div>
+            ) : marketLoading ? (
+              <span style={{ fontFamily: FONT_MONO, fontSize: 10, color: C.faint }}>loading…</span>
+            ) : null}
           </div>
           <div style={{ fontSize: 13, color: C.dim, marginBottom: 20 }}>
-            In demand for {prof.role}, beyond your coursework
+            {isLive
+              ? `From ${market!.count.toLocaleString()} live ${prof.role} postings`
+              : `In demand for ${prof.role}, beyond your coursework`}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {prof.missing.map(s => (
-              <div key={s} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '11px 16px', borderRadius: 10,
-                background: C.panel2, border: `1px solid ${C.line}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.cyan, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13.5, color: C.text, fontFamily: FONT_BODY }}>{s}</span>
+            {displayGaps.map(s => {
+              const fromLive = market?.topSkills.includes(s);
+              return (
+                <div key={s} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '11px 16px', borderRadius: 10,
+                  background: C.panel2, border: `1px solid ${fromLive ? C.cyan + '55' : C.line}`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: fromLive ? C.cyan : C.faint, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13.5, color: C.text, fontFamily: FONT_BODY }}>{s}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {fromLive && (
+                      <span style={{ fontFamily: FONT_MONO, fontSize: 9.5, color: C.cyan, background: `${C.cyan}14`, border: `1px solid ${C.cyan}33`, borderRadius: 20, padding: '2px 7px' }}>LIVE</span>
+                    )}
+                    <span style={{
+                      fontFamily: FONT_MONO, fontSize: 10.5, letterSpacing: .5,
+                      background: `${C.lime}14`, color: C.lime,
+                      border: `1px solid ${C.lime}33`, borderRadius: 20, padding: '3px 9px',
+                    }}>GPS +{gpsBoost}%</span>
+                  </div>
                 </div>
-                <span style={{
-                  fontFamily: FONT_MONO, fontSize: 10.5, letterSpacing: .5,
-                  background: `${C.lime}14`, color: C.lime,
-                  border: `1px solid ${C.lime}33`, borderRadius: 20, padding: '3px 9px',
-                }}>GPS +{gpsBoost}%</span>
-              </div>
-            ))}
-            {prof.missing.length === 0 && (
+              );
+            })}
+            {displayGaps.length === 0 && (
               <div style={{ fontSize: 13.5, color: C.lime, padding: '12px 16px' }}>
-                ✓ You're covering all in-demand skills for {prof.role}!
+                ✓ You&apos;re covering all in-demand skills for {prof.role}!
               </div>
             )}
           </div>
+          {isLive && (
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}`, fontSize: 11.5, color: C.faint }}>
+              Refreshes every 24 h · Falls back to static list if API is unreachable
+            </div>
+          )}
         </Panel>
 
       </div>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useProfile } from '@/context/ProfileContext';
 import { computeProfile, nextAction, timeToGoal, careerDNA, buildRoute, buildProgress } from '@/lib/engine';
 import { OPPORTUNITIES } from '@/lib/constants';
+import { useMarketData } from '@/lib/useMarketData';
 import { C, FONT_DISPLAY, FONT_BODY, FONT_MONO, Panel, Pill, Ring, Bar } from '@/components/ui';
 import { Zap, Briefcase, CheckCircle2, Navigation, Award, Github, TrendingUp as TrendUp } from '@/components/icons';
 
@@ -23,6 +24,13 @@ export default function Dashboard() {
   const route = buildRoute(profile, prof);
   const opp = OPPORTUNITIES[prof.role as keyof typeof OPPORTUNITIES] ?? [];
   const [tab, setTab] = useState(0);
+  const { data: market, loading: marketLoading } = useMarketData(prof.role);
+
+  // Live skills from market: merge with static demand, deduplicate; fall back to static demand
+  const liveSkills: string[] = market?.topSkills ?? [];
+  const allDemand = Array.from(new Set([...prof.demand, ...liveSkills]));
+  const ownedSet = new Set(profile.skills ?? []);
+  const liveGaps = liveSkills.filter(s => !ownedSet.has(s));
 
   const matchedCount: number = prof.matched.length;
   const missingCount: number = prof.missing.length;
@@ -306,9 +314,22 @@ export default function Dashboard() {
 
           {/* Opportunity Radar */}
           <Panel style={{ padding: '22px 26px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: 20 }}>🎯</span>
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 24, color: C.text }}>Opportunity Radar</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 20 }}>🎯</span>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 24, color: C.text }}>Opportunity Radar</div>
+              </div>
+              {market && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: `${C.cyan}12`, border: `1px solid ${C.cyan}33`, borderRadius: 20, padding: '5px 12px' }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.cyan }} />
+                  <span style={{ fontFamily: FONT_MONO, fontSize: 11, color: C.cyan, letterSpacing: .5 }}>
+                    {market.count.toLocaleString()} live postings
+                  </span>
+                </div>
+              )}
+              {marketLoading && (
+                <span style={{ fontFamily: FONT_MONO, fontSize: 11, color: C.faint }}>fetching live data…</span>
+              )}
             </div>
             <div style={{ fontSize: 13.5, color: C.dim, marginBottom: 22 }}>
               Recommended for your <span style={{ color: C.lime, fontWeight: 500 }}>{prof.role}</span> path
@@ -332,6 +353,51 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </Panel>
+
+          {/* What the Market Wants */}
+          <Panel style={{ padding: '22px 26px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div>
+                <div style={{ fontFamily: FONT_MONO, fontSize: 10.5, letterSpacing: 1, color: C.dim, marginBottom: 4 }}>WHAT THE MARKET WANTS</div>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 20, color: C.text }}>Skills from live {prof.role} postings</div>
+              </div>
+              {market ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${C.lime}12`, border: `1px solid ${C.lime}33`, borderRadius: 20, padding: '5px 12px', flexShrink: 0 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.lime }} />
+                  <span style={{ fontFamily: FONT_MONO, fontSize: 10.5, color: C.lime }}>LIVE DATA</span>
+                </div>
+              ) : (
+                <span style={{ fontFamily: FONT_MONO, fontSize: 10.5, color: C.faint }}>
+                  {marketLoading ? 'loading…' : 'STATIC'}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {(liveSkills.length > 0 ? liveSkills : prof.demand).map(s => {
+                const have = ownedSet.has(s);
+                return (
+                  <div key={s} style={{
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '7px 13px', borderRadius: 20, fontSize: 13,
+                    background: have ? `${C.lime}14` : C.panel2,
+                    border: `1px solid ${have ? C.lime : C.line}`,
+                    color: have ? C.lime : C.text,
+                  }}>
+                    <span style={{ fontSize: 11 }}>{have ? '✓' : '+'}</span>
+                    {s}
+                    {!have && liveSkills.includes(s) && (
+                      <span style={{ fontFamily: FONT_MONO, fontSize: 9, color: C.cyan, letterSpacing: .5, marginLeft: 2 }}>LIVE</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {liveGaps.length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.line}`, fontSize: 12.5, color: C.dim }}>
+                {liveGaps.length} skill{liveGaps.length !== 1 ? 's' : ''} in live postings you haven&apos;t added yet
               </div>
             )}
           </Panel>
