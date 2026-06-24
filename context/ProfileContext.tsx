@@ -38,7 +38,15 @@ export function ProfileProvider({ children, initial }: { children: ReactNode; in
       await supabase.from('user_projects').delete().eq('user_id', profile.id);
       if (project_list.length > 0) {
         await supabase.from('user_projects').insert(
-          project_list.map((p: ProjectItem) => ({ user_id: profile.id, title: p.title, stack: p.stack }))
+          project_list.map((p: ProjectItem) => ({
+            user_id:     profile.id,
+            title:       p.title,
+            stack:       p.stack,
+            description: p.description ?? null,
+            gh_url:      p.gh_url ?? null,
+            shipped:     p.shipped ?? false,
+            level:       p.level ?? null,
+          }))
         );
       }
     }
