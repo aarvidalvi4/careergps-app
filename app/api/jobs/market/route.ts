@@ -101,16 +101,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const totalJobs = jobs.length;
+
     const topSkills = Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12)
       .map(([s]) => s);
 
     return NextResponse.json({
-      count:      data.total ?? jobs.length,
+      count:       data.total ?? totalJobs,
       topSkills,
+      skillCounts: counts,      // { "Git": 14, "TypeScript": 11, … }
+      totalJobs,                // denominator for frequency calculation
       role,
-      fetchedAt:  Date.now(),
+      fetchedAt:   Date.now(),
     });
   } catch {
     return NextResponse.json({ error: 'fetch_failed' }, { status: 502 });

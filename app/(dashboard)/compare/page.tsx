@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { computeProfile } from '@/lib/engine';
 import { useMarketData } from '@/lib/useMarketData';
+import { gpsGain } from '@/lib/gpsGain';
 import { C, FONT_DISPLAY, FONT_MONO, FONT_BODY, Panel, Head } from '@/components/ui';
 import { BookOpen, Plus } from '@/components/icons';
 
@@ -19,7 +20,6 @@ export default function Compare() {
     : prof.missing;
   const isLive = liveGaps.length > 0;
 
-  const gpsBoost = Math.round(55 / Math.max(1, prof.demand.length));
 
   const syllabus: Record<string, string[]> = (profile as { syllabus?: Record<string, string[]> }).syllabus ?? {};
   const syllabusSubjects: string[] = Object.values(syllabus).flat().filter(Boolean);
@@ -110,6 +110,7 @@ export default function Compare() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {displayGaps.map(s => {
+              const { gain, isLive: skillIsLive } = gpsGain(s, market);
               const fromLive = market?.topSkills.includes(s);
               return (
                 <div key={s} style={{
@@ -127,9 +128,11 @@ export default function Compare() {
                     )}
                     <span style={{
                       fontFamily: FONT_MONO, fontSize: 10.5, letterSpacing: .5,
-                      background: `${C.lime}14`, color: C.lime,
-                      border: `1px solid ${C.lime}33`, borderRadius: 20, padding: '3px 9px',
-                    }}>GPS +{gpsBoost}%</span>
+                      background: skillIsLive ? `${C.lime}14` : `${C.amber}0d`,
+                      color: skillIsLive ? C.lime : C.amber,
+                      border: `1px solid ${skillIsLive ? C.lime : C.amber}33`,
+                      borderRadius: 20, padding: '3px 9px',
+                    }}>GPS +{gain}%{!skillIsLive ? ' est.' : ''}</span>
                   </div>
                 </div>
               );

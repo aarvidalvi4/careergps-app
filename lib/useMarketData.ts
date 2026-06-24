@@ -2,17 +2,19 @@
 import { useState, useEffect } from 'react';
 
 export interface MarketData {
-  count: number;        // total live postings found
-  topSkills: string[];  // most-mentioned skills in those postings
+  count: number;                    // total live postings found
+  topSkills: string[];              // most-mentioned skills, sorted by frequency
+  skillCounts: Record<string, number>; // { "Git": 14, "TypeScript": 11, … }
+  totalJobs: number;                // number of postings analysed (denominator)
   role: string;
-  fetchedAt: number;    // unix ms — used to check cache freshness
+  fetchedAt: number;                // unix ms — used to check cache freshness
 }
 
 // Cache lives for 24 hours — avoids hammering the API on every page visit
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 function storageKey(role: string) {
-  return `ccp_market_${role.replace(/[\s/]+/g, '_')}`;
+  return `ccp_market_v2_${role.replace(/[\s/]+/g, '_')}`;
 }
 
 export function useMarketData(role: string) {
