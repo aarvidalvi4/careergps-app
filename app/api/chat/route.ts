@@ -75,32 +75,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ reply });
   } catch (err: unknown) {
-    const status  = (err as { status?: number })?.status;
-    const errMsg  = (err as { message?: string })?.message ?? String(err);
+    // Log full details server-side only — never expose to the user
+    const status = (err as { status?: number })?.status;
+    const errMsg = (err as { message?: string })?.message ?? String(err);
     console.error('[MentorAI]', status, errMsg);
 
-    if (status === 429) {
-      return NextResponse.json({
-        reply: "I'm handling a lot of questions right now — give me 30 seconds and try again!",
-      });
-    }
-    if (status === 401) {
-      return NextResponse.json({
-        reply: 'MentorAI needs its API key configured. Go to Vercel → Settings → Environment Variables → add ANTHROPIC_API_KEY.',
-      });
-    }
-    if (errMsg.includes('credit balance')) {
-      return NextResponse.json({
-        reply: "MentorAI is out of API credits. Go to console.anthropic.com → Plans & Billing to top up, then try again!",
-      });
-    }
-    if (status === 400 || status === 404) {
-      return NextResponse.json({
-        reply: `MentorAI config error (${status}): ${errMsg}`,
-      });
-    }
-    return NextResponse.json({
-      reply: "Something went wrong on my end — try again in a moment. Your roadmap is still here whenever you're ready!",
-    });
+    const reply = status === 429
+      ? "I'm taking a quick break — give me 30 seconds and try again!"
+      : "I'm taking a quick break — try again in a moment!";
+
+    return NextResponse.json({ reply });
   }
 }
