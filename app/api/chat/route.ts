@@ -89,9 +89,14 @@ export async function POST(req: NextRequest) {
         reply: 'MentorAI needs its API key configured. Go to Vercel → Settings → Environment Variables → add ANTHROPIC_API_KEY.',
       });
     }
+    if (errMsg.includes('credit balance')) {
+      return NextResponse.json({
+        reply: "MentorAI is out of API credits. Go to console.anthropic.com → Plans & Billing to top up, then try again!",
+      });
+    }
     if (status === 400 || status === 404) {
       return NextResponse.json({
-        reply: `MentorAI config error (${status}): ${errMsg}. This is likely a model name issue — check Vercel function logs.`,
+        reply: `MentorAI config error (${status}): ${errMsg}`,
       });
     }
     return NextResponse.json({
