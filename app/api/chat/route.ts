@@ -75,10 +75,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ reply });
   } catch (err: unknown) {
-    console.error('[MentorAI]', err);
+    const status  = (err as { status?: number })?.status;
+    const errMsg  = (err as { message?: string })?.message ?? String(err);
+    console.error('[MentorAI]', status, errMsg);
 
-    // Surface a friendly message that matches the failure mode
-    const status = (err as { status?: number })?.status;
     if (status === 429) {
       return NextResponse.json({
         reply: "I'm handling a lot of questions right now — give me 30 seconds and try again!",
@@ -86,7 +86,12 @@ export async function POST(req: NextRequest) {
     }
     if (status === 401) {
       return NextResponse.json({
-        reply: 'MentorAI is not configured yet. Ask your admin to add the ANTHROPIC_API_KEY in Vercel → Settings → Environment Variables.',
+        reply: 'MentorAI needs its API key configured. Go to Vercel → Settings → Environment Variables → add ANTHROPIC_API_KEY.',
+      });
+    }
+    if (status === 400 || status === 404) {
+      return NextResponse.json({
+        reply: `MentorAI config error (${status}): ${errMsg}. This is likely a model name issue — check Vercel function logs.`,
       });
     }
     return NextResponse.json({
